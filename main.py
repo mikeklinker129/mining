@@ -1,111 +1,80 @@
-import sys
+import datetime
+from dateutil import parser
+import numpy as np
+import ast
 import os
-import datetime
-import ast
-from yahoo_finance import Share
-
 import sys
-import datetime
-import ast
+
 from yahoo_finance import Share
 
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+from data_manager import Stock_Data_Manager()
+
+class Stock_Object():
+    def __init__(self, symb):
+        self.symb   = symb
+        self.s      = Share(symb)   
+        self.sdm    = Stock_Data_Manager(symb) #Data Manager
+        self.d      = self.sdm.data
 
 
-def pull_historical_data():
 
-    symbols = get_symbols()
-
-    stock_list = []
-    for symb in symbols:
-        print symb
-
-        if os.path.exists('data/%s.txt' %symb):
-            continue
-
+    def update(self): #PULL NEW DATA
         try:
-            stock_list.append(Share(symb))
-            print 'Got Info'
-            stock = stock_list[-1]
-            hist_data= stock.get_historical('2006-02-01','2017-03-27')
-            print 'Got Hist'
+            self.s.refresh()
+            p = np.round(float(self.s.get_price()),3)
+            v = int(self.s.get_volume())
+            t = parser.parse(self.s.get_trade_datetime())
+            self.sdm.add_line(p,v,t)
+            self.d = self.sdm.data
         except Exception as e:
-            print 'Error pulling %s: %s' %(stock.symbol,e)
-            continue
-        outfile = 'data/%s.txt' %stock.symbol
-        with open(outfile,'w') as w:
-            w.write(str(hist_data))
-
-#pull_historical_data()
-def get_symbols():
-    symbols=[]
-    with open('SP500.txt','r') as f:
-        symbols = [line.strip() for line in f]
-    symbols.append('^GSPC')
-    return symbols
+            print 'Update Failed: %s' %e
 
 
-def load_historical_data(symbols=get_symbols()):
+    def ma(self,t_window): #MOVING AVERAGE
+        #t_window = minutes
+        sump = 0
+        count = 0
+        start = parser.parse(self.d[0]['time'])
+        for dp in self.d:
+            stop = dp['time']
+            if self.dt_min(start,stop)>=t_window:
+                break
+            else:
+                sump += dp['price']
+                count++
 
-    stock_list={}
-    for symb in symbols:
-        print symb
-        filename = 'data/%s.txt' %symb
-        try:
-            with open(filename,'r') as r:
-                raw = r.read() 
-                hist_data = ast.literal_eval(raw)
-            stock_list[symb]=hist_data
-        except Exception as e:
-            print 'Error pulling %s: %s' %(symb,e)
-            continue
+        moving_avg = sump/count
 
-    return stock_list
+        return moving_avg
 
 
-def index_by_date(dt,symb = ['AMZN']):
-    stock_list = load_historical_data(symb)
-    stock = stock_list.get(symb[0])
+    def velp(self,t_window): #VELOCITY PRICE
 
-    for i in range(0,len(stock)):
-        tmp = datetime.datetime.strptime(stock[i]['Date'],'%Y-%m-%d')
-        if tmp==dt:
-            break
-    return i
 
-#{'High': '850.0', 'Symbol': 'AMZN', 
-#   'Adj_Close': '846.8', 'Volume': '2754200', 
-#   'Low': '833.50', 'Date': '2017-03-27', 
-#   'Close': '846.82', 'Open': '838.07'}
+    def accelp(self,t_window): #ACCEL PRICE
 
-#pull_historical_data()
 
-##########
-# stock_data = load_historical_data()
+    def velv(self,t_window): # VELOCITY VOLUME
+        
 
-# amazon = stock_data['AMZN']
-# print amazon[0]
+    def accelv(self,t_window): #ACCEL VOLUME
 
-# p = []
-# time = []
-# for day in amazon:
-#     p.append(day['Close'])
-#     time.append(day['Date'])
 
-# x = [datetime.datetime.strptime(d,'%Y-%m-%d').date() for d in time]
 
-# plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-# plt.gca().xaxis.set_major_locator(mdates.DayLocator())
-# plt.plot(x,p)
-# plt.gcf().autofmt_xdate()
-# plt.show()
+    def ekf(self):
 
-# dt = datetime.datetime.strptime('2017-03-09', '%Y-%m-%d')
-# index_by_date(dt)
+        #predict
+        x_k = f(x_km1) # predicted state given my last state
+        P_k = F_km1 * P_km1 * F_km1 + Q_km1
 
-# #print stock_data['AMZN'][0]
-##########
+        #update
+        y_k = #measurement - predicted measurement
+        S_k = H*P_k*H + R 
+        K_k = P_k * H / S_k
+
+        x = x_k + K_k * y_k
+        P = (1-K_k*H) * P_k
+ 
 
 
 
@@ -113,52 +82,13 @@ def index_by_date(dt,symb = ['AMZN']):
 
 
 
-print '\n++++++++ GET RICH NIGGA ++++++++++\n'
+###################################################################
 
+    def dt_min(self,start,stop):
+        dt =(stop-start).total_seconds()/60
+        return np.round(dt,2)
 
-
-
-
-
-
-
-
-
-
-
-# if __name__ == '__main__':
-
-
-#Look at documentation about getting fresh tokens for web apps
-
-
-
-
-# {'contest_mode': False, '_comments_by_id': {}, 'banned_by': None, 
-# 'comment_sort': 'best', 'media_embed': {}, 
-# 'subreddit': Subreddit(display_name='wallstreetbets'), 
-
-# 'likes': None, 'suggested_sort': None, 'user_reports': [], 
-# 'secure_media': None, 'link_flair_text': u'BioTrump tech', 
-# 'id': u'60w2s3', 'gilded': 0, 'secure_media_embed': {}, 
-# 'clicked': False, 'score': 161, 'report_reasons': None, 
-# 'author': Redditor(name='hibernating_brain'), 'saved': False, 
-# 'mod_reports': [], 'name': u't3_60w2s3', 'comment_limit': 2048, 
-# 'subreddit_name_prefixed': u'r/wallstreetbets', 'approved_by': None, 
-# 'over_18': False, 'domain': u'self.wallstreetbets', 'hidden': False,
-#  'thumbnail': u'', 'subreddit_id': u't5_2th52', 'edited': 1490384142.0, 
-#  'link_flair_css_class': u'biotech', 'author_flair_css_class': None, 
-#  'downs': 0, 'brand_safe': False, 'archived': False, 'removal_reason': None,
-#   '_reddit': <praw.reddit.Reddit object at 0x101869390>, 'is_self': True, 
-#   '_mod': None, 'hide_score': False, 'spoiler': False,
-#    'permalink': u'/r/wallstreetbets/comments/60w2s3/dd_and_speculation_thread_american_health_care_act/',
-#     'num_reports': None, 'locked': False, 'stickied': True, 'created': 1490232861.0, 
-
-#     'url': u'https://www.reddit.com/r/wallstreetbets/comments/60w2s3/dd_and_speculation_thread_american_health_care_act/', 
-#     'author_flair_text': u'Likes Hitler dick and Masterbotting', 'quarantine': False,
-#      'title': u'[DD and Speculation thread] American Health Care Act', 
-#      'created_utc': 1490204061.0, 'distinguished': None, '_flair': None, 'media': None, 
-# 'num_comments': 260, 'visited': False, 'subreddit_type': u'public', 'ups': 161, '_fetched': False}
-
-
+    def dt_sec(self,start,stop):
+        dt =(stop-start).total_seconds()
+        return np.round(dt,2)
 
