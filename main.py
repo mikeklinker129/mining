@@ -7,7 +7,7 @@ import sys
 
 from yahoo_finance import Share
 
-from data_manager import Stock_Data_Manager()
+from data_manager import Stock_Data_Manager
 
 class Stock_Object():
     def __init__(self, symb):
@@ -41,43 +41,55 @@ class Stock_Object():
                 break
             else:
                 sump += dp['price']
-                count++
+                count +=1
 
         moving_avg = sump/count
 
         return moving_avg
 
 
-    def velp(self,t_window): #VELOCITY PRICE
+    # def velp(self,t_window): #VELOCITY PRICE
 
 
-    def accelp(self,t_window): #ACCEL PRICE
+    # def accelp(self,t_window): #ACCEL PRICE
 
 
-    def velv(self,t_window): # VELOCITY VOLUME
+    # def velv(self,t_window): # VELOCITY VOLUME
         
 
-    def accelv(self,t_window): #ACCEL VOLUME
+    # def accelv(self,t_window): #ACCEL VOLUME
 
 
 
-    def ekf(self):
+    # def ekf(self):
 
-        #predict
-        x_k = f(x_km1) # predicted state given my last state
-        P_k = F_km1 * P_km1 * F_km1 + Q_km1
+    #     #predict
+    #     x_k = f(x_km1) # predicted state given my last state
+    #     P_k = F_km1 * P_km1 * F_km1 + Q_km1
 
-        #update
-        y_k = #measurement - predicted measurement
-        S_k = H*P_k*H + R 
-        K_k = P_k * H / S_k
+    #     #update
+    #     y_k = #measurement - predicted measurement
+    #     S_k = H*P_k*H + R 
+    #     K_k = P_k * H / S_k
 
-        x = x_k + K_k * y_k
-        P = (1-K_k*H) * P_k
+    #     x = x_k + K_k * y_k
+    #     P = (1-K_k*H) * P_k
  
 
 
+# KF
+# x = x
+# p = p + q;
+# k = p / (p + r);
+# x = x + k * (measurement – x);
+# p = (1 – k) * p;
 
+# Where:
+# q = process noise covariance
+# r = measurement noise covariance
+# x = value of interest
+# p = estimation error covariance
+# k = Kalman gain
 
 
 

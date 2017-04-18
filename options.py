@@ -156,11 +156,11 @@ def plot_butterfly(sp):
     plt.show()
 
 
-symb = 'NVDA'
+symb = 'BAC'
 quote = web.get_quote_yahoo(symb)
 option_m = Options(symb,'yahoo')
 print option_m.expiry_dates
-ex_date = option_m.expiry_dates[1]
+ex_date = option_m.expiry_dates[3]
 
 print ex_date
 data = option_m.get_options_data(expiry=ex_date)
@@ -185,6 +185,7 @@ for i in range(0,100):#data.iloc:
         break
 
 price = quote.iloc[0]['last']
+y_all = []
 
 for i in range(0,min(len(calls),len(puts))):
     cs = calls[i]['strike']
@@ -205,7 +206,7 @@ for i in range(0,min(len(calls),len(puts))):
         continue
 
     
-    x_p = np.linspace(price*.9,price*1.1,500)
+    x_p = np.linspace(price*.8,price*1.2,1000)
 
 
     s1 = cs
@@ -236,9 +237,28 @@ for i in range(0,min(len(calls),len(puts))):
         y_p2.append(2*y1[-1]+y2[-1]) 
  
     plt.plot(x_p,y_p)
+    y_all.append(y_p)
     #plt.plot(x_p,y_p2)
     #plt.plot(x_p,y1)
    # plt.plot(x_p,y2)
+
+min_loss = y_all[0]
+for yi in y_all:
+    if min(yi)>min(min_loss):
+        min_loss = yi
+
+zeros = []
+
+for i in range(5,len(min_loss)-5):
+    if abs(min_loss[i-1])>abs(min_loss[i]) and abs(min_loss[i+1])>abs(min_loss[i]):
+        zeros.append(x_p[i])
+
+for zero in zeros:
+    print 'Delta: %s' %((zero-price)/price * 100 )
+
+
+plt.plot(x_p,min_loss,linewidth=5)
+
 
 plt.plot([price,price],[-5,5],linewidth=3,ls='dashed')
 plt.grid(True)
