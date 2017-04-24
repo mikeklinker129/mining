@@ -24,6 +24,12 @@ def call_intrinsic(stock,strike):
     in_val = stock.iloc[0]['last']-strike
     return in_val
 
+def call_extrinsic(stock,strike,premium):
+
+    val = premium - call_intrinsic(stock,strike)
+    return val
+
+
 def put_intrinsic(stock,strike):
 
     in_val = - stock.iloc[0]['last'] +strike
@@ -156,11 +162,11 @@ def plot_butterfly(sp):
     plt.show()
 
 
-symb = 'BAC'
+symb = 'UAL'
 quote = web.get_quote_yahoo(symb)
 option_m = Options(symb,'yahoo')
 print option_m.expiry_dates
-ex_date = option_m.expiry_dates[3]
+ex_date = option_m.expiry_dates[2]
 
 print ex_date
 data = option_m.get_options_data(expiry=ex_date)
@@ -186,6 +192,17 @@ for i in range(0,100):#data.iloc:
 
 price = quote.iloc[0]['last']
 y_all = []
+
+
+for call in calls:
+    strike = call['strike']
+    premium = call['lastPrice']
+    intrin = call_intrinsic(quote,strike)
+    extrin = call_extrinsic(quote,strike,premium)
+
+    print 'Option Stike: %s Premium: %.2f  Intrinsic: %.2f  Extrinsic: %.2f' %(strike,premium,intrin,extrin)
+
+# sys.exit(1)
 
 for i in range(0,min(len(calls),len(puts))):
     cs = calls[i]['strike']
