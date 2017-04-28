@@ -37,8 +37,12 @@ class Stock_Data_Manager():
         d['volume']= volume
         d['time']  = time.isoformat() #datetime object
 
-        self.data.insert(0,d)
+        if len(self.data)>1:
+            if d['time']==self.data[0]['time']:
+                print 'No new information'
+                return 0
 
+        self.data.insert(0,d)
         with open(self.filename,'a') as wr:
             wr.write(str(d)+'\n')
 

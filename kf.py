@@ -129,3 +129,33 @@ plt.show()
 
 
 
+
+    # def ekf(self):
+
+    #     #predict
+    #     x_k = f(x_km1) # predicted state given my last state
+    #     P_k = F_km1 * P_km1 * F_km1 + Q_km1
+
+    #     #update
+    #     y_k = #measurement - predicted measurement
+    #     S_k = H*P_k*H + R 
+    #     K_k = P_k * H / S_k
+
+    #     x = x_k + K_k * y_k
+    #     P = (1-K_k*H) * P_k
+ 
+
+
+# KF
+# x = x
+# p = p + q;
+# k = p / (p + r);
+# x = x + k * (measurement – x);
+# p = (1 – k) * p;
+
+# Where:
+# q = process noise covariance
+# r = measurement noise covariance
+# x = value of interest
+# p = estimation error covariance
+# k = Kalman gain

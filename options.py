@@ -20,22 +20,46 @@ import time
 # print data.iloc[1]['JSON']['strike']
 
 def call_intrinsic(stock,strike):
-
     in_val = stock.iloc[0]['last']-strike
     return in_val
 
 def call_extrinsic(stock,strike,premium):
-
     val = premium - call_intrinsic(stock,strike)
     return val
 
-
 def put_intrinsic(stock,strike):
-
     in_val = - stock.iloc[0]['last'] +strike
     return in_val
 
 
+
+
+def calc_iron_condor(sellPut,buyPut,sellCall,buyCall, d1, d2, d3, d4):
+
+    # sellPut > buyPut
+    # sellCall< buyCall
+
+    calc = {}
+    info = {}
+    net_premium = d1 - d2 + d3 - d4
+
+    info['strike_low']  = buyPut
+    info['strike_mid1'] = sellPut
+    info['strike_mid2'] = sellCall   
+    info['strike_high'] = buyCall
+    info['price_low']   = d1
+    info['price_mid1']  = d2
+    info['price_mid2']  = d3
+    info['price_high']  = d4
+
+    calc['max_profit'] = net_premium 
+    calc['low_break']  = d1-net_premium
+    calc['high_break'] = d3+net_premium
+    calc['min_profit'] = d4-sellCall-net_premium
+    calc['width'] = calc['high_break']-calc['low_break']
+
+    rtrn = {'info':info, 'calc':calc}
+    return rtrn
 
 def calc_butterfly_call(s_low, s_mid, s_high, d_low, d_mid, d_high, d_expire):
     calc = {}
@@ -141,19 +165,6 @@ def plot_butterfly(sp):
         y3.append(y)
         y_p.append(y1[-1]+y2[-1]+y3[-1])
 
-
-
-    # for x in x_p:
-    #     if x<=s1:
-    #         y = p1+2*p2+p3
-    #     elif s1<x and x<=s2:
-    #         y=p3+2*p2+p1+x-s1
-    #     elif s2<x and x<=s3:
-    #         y = p3+2*p2-2*(x-s2)+(p1+x-s1)
-    #     elif s3<x:
-    #         y = p3+x-s3+2*p2-2*(x-s2)+(p1+x-s1)
-    #     y_p.append(y)
-
     plt.plot(x_p,y1)
     plt.plot(x_p,y2)
     plt.plot(x_p,y3)
@@ -162,11 +173,11 @@ def plot_butterfly(sp):
     plt.show()
 
 
-symb = 'UAL'
+symb = 'EUO'
 quote = web.get_quote_yahoo(symb)
 option_m = Options(symb,'yahoo')
 print option_m.expiry_dates
-ex_date = option_m.expiry_dates[2]
+ex_date = option_m.expiry_dates[1]
 
 print ex_date
 data = option_m.get_options_data(expiry=ex_date)
@@ -223,7 +234,7 @@ for i in range(0,min(len(calls),len(puts))):
         continue
 
     
-    x_p = np.linspace(price*.8,price*1.2,1000)
+    x_p = np.linspace(price*.5,price*1.5,1000)
 
 
     s1 = cs
